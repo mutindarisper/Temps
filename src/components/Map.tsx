@@ -75,7 +75,7 @@ const Map: React.FC = () => {
             padding: '8px 16px',
             cursor: 'pointer',
             fontSize: '20px',
-            fontWeight: 'bold'
+            fontWeight: 'bold' 
           }}
         >
           Elevation
