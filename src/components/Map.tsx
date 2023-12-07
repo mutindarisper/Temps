@@ -10,6 +10,8 @@ import './Map.css'
 import markerIcon from '../assets/marker.svg'
 import { CloudOutlined, Opacity, AirOutlined, Compress} from '@mui/icons-material';
 import pressure from '../assets/heat.svg'
+import Chart from 'chart.js'
+import { Line } from 'react-chartjs-2';
 
 
 
@@ -29,14 +31,41 @@ const Map: React.FC = () => {
   const [temperatureCelcius, setTemperatureCelcius] = useState<number>()
   const [placeName, setplaceName] = useState<string >('');
   const [date, setDate] = useState<string >('');
+  const [tempData, setTempData] = useState<any >([]);
+  const [tempLabels, setTempLabels] = useState<any>([])
+  const tempRef = useRef<number>()
 
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
-
+ 
 
   // const milliseconds = 1701900784
 
   // const date = new Date(milliseconds);
   // console.log(date)
+  const formatData = (data: number[], backgroundColor:string): Chart.ChartData => ({
+    labels: tempLabels,
+    datasets: [{ data, backgroundColor,  }],
+  });
+
+  const chartRef = useRef<Chart | null>(null);
+
+ const canvasCallback = (canvas: HTMLCanvasElement | null) => {
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      chartRef.current = new Chart(ctx, {
+        type: "bar",
+        data: formatData(tempData, '#fff'),
+        
+        options: { responsive: true,
+        plugins: {
+            // Add background color here
+            legend: false
+          }
+        }
+      });
+    }
+  };
 
 
   const handleTabChange = (tab: 'temperature' | 'elevation') => {
@@ -68,7 +97,7 @@ const Map: React.FC = () => {
   };
   const fetchTempData = async () => {
 
-    try {
+    try { 
       const tempResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`)
       console.log(tempResponse.data)
 
@@ -77,6 +106,7 @@ const Map: React.FC = () => {
       setWind(tempResponse.data.wind.speed)
       setAirPressure(tempResponse.data.main.pressure)
       setTemperatureCelcius(Math.trunc(tempResponse.data.main.temp - 273.15))
+      // tempRef.current = Math.trunc(tempResponse.data.main.temp - 273.15)
       setplaceName(tempResponse.data.name)
       const milliseconds = tempResponse.data.dt
 
@@ -87,17 +117,33 @@ const Map: React.FC = () => {
   var code = tempResponse.data.weather[0].icon
   console.log(code)
 
+  const temp_labels = tempResponse.data.main
+  const { temp_min, temp_max } = temp_labels;
+  const new_data = { temp_min, temp_max } 
+  const temperature_labels = Object.keys(new_data)
+  var temperature_values = Object.values(new_data)
+  setTempData(temperature_values)
+  setTempLabels(temperature_labels)
 
-  // const getWeatherIcon = (code: string) => { new Date(timestamp * 1000)
-  //   switch (code) {
-  //     case '02n':
-  //       return <CloudOutlined />; // Use the appropriate icon component for each code
-  //     // Add more cases for other weather conditions
-  //     default:
-  //       return null; // Return null or a default icon for unknown codes
-  //   }
-  // };
+  console.log(Object.keys(new_data) )
+  console.log(Object.values(new_data) )
 
+
+  // const temperatureData = (data:number[]): Chart.ChartData({
+  //   labels: ['temp_min', 'temp_max', ],
+  //   // datasets: [
+  //   //   {
+  //   //     label: 'Temperature',
+  //   //     data: [temp_min, temp_max], // Replace this with your temperature data
+  //   //     fill: false,
+  //   //     borderColor: 'blue',
+  //   //     backgroundColor: 'blue',
+  //   //   },
+  //   // ],
+  //   datasets:[{ data }]
+  // });
+
+  // setTempData(temperatureData)
 
 
       const customIcon = L.icon({
@@ -117,6 +163,8 @@ const Map: React.FC = () => {
     <b>Temperature:</b> ${(tempResponse.data.main.temp - 273.15).toFixed(2)} °C <br>
     <b>Weather:</b> ${tempResponse.data.weather[0].main}<br> `)
       //.openPopup();
+
+
 
     } catch (error) {
 
@@ -156,6 +204,13 @@ const Map: React.FC = () => {
     if (searchContainer) {
       searchContainer.style.zIndex = '1000';
     }
+
+
+    if (chartRef.current) {
+      chartRef.current.data = formatData(tempData);
+      chartRef.current.update();
+    }
+
 
   }, []);
 
@@ -455,23 +510,30 @@ const Map: React.FC = () => {
 
                 <div className='stats' style={{ width: '71.5%', height: '31vh', position: 'absolute', top: '66vh', zIndex: 150 }}>
                 {activeTab === 'temperature' && (
-                  <div style={{color:'#fff'}}>
+                  <div style={{color:'#fff', display:'flex', flexDirection:'row', gap:'8rem'}}>
 
                     <div style={{ display:'flex', flexDirection:'row'}}>
 
-                    <Typography
-                      style={{
-                        padding: '8px 16px',
-                        cursor: 'pointer',
-                        fontSize: '98px',
-                        fontWeight: '500',
-                        marginTop: '5vh' 
-                      }}
-                    
-                    >
-                      {temperatureCelcius}°
+                      {
+                        tempData.length !== 0 ? 
+                          <Typography
+                          style={{
+                            padding: '8px 16px',
+                            cursor: 'pointer',
+                            fontSize: '98px',
+                            fontWeight: '500',
+                            marginTop: '5vh' 
+                          }}
+                        
+                        >
+                          {temperatureCelcius}°
+    
+                        </Typography> : ''
 
-                    </Typography>
+                        
+                      }
+
+                   
                     {/* <br/> */}
                     <div style={{display:'flex', flexDirection:'column', gap:'-8vh',   marginTop: '8vh' }}>
                     <Typography
@@ -503,6 +565,18 @@ const Map: React.FC = () => {
                     </Typography>
 
                     </div>
+
+                      {
+                        tempData.length !== 0 ? 
+                        <div style={{color:'#fff', marginLeft:'18vw'}}>
+                        <h2>Temperature for {placeName}</h2>
+                        <canvas ref={canvasCallback}></canvas>
+                      </div> : <div style={{marginTop:'10vh', marginLeft:'27vw', fontWeight:500}}>Input Latitude and Longitude</div> 
+                          
+
+                  
+                      }
+                  
                   
                       
                     </div>
