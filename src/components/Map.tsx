@@ -8,6 +8,9 @@ import 'leaflet-geosearch/dist/geosearch.css';
 import axios from 'axios';
 import './Map.css'
 import markerIcon from '../assets/marker.svg'
+import { CloudOutlined, Opacity, AirOutlined, Compress} from '@mui/icons-material';
+import pressure from '../assets/heat.svg'
+
 
 
 
@@ -15,10 +18,18 @@ import markerIcon from '../assets/marker.svg'
 const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'temperature' | 'elevation'>('temperature');
-  const [number, setNumber] = useState<number | ''>('');
-  const [latitude, setLatitude] = useState<number >('');
-  const [longitude, setLongitude] = useState<number >('');
-  const [height, setHeight] = useState<number | ''>('');
+  
+  const [latitude, setLatitude] = useState<number>();
+  const [longitude, setLongitude] = useState<number>();
+  const [height, setHeight] = useState<string >('');
+  const [cloudDetail, setCloudDetail] = useState<string >('');
+  const [humidity, setHumidity] =useState<string >('');
+  const [wind, setWind] = useState<string >('');
+  const [airPressure, setAirPressure] = useState<string >('');
+  const [temperatureCelcius, setTemperatureCelcius] = useState<number>()
+  const [placeName, setplaceName] = useState<string >('');
+  const [date, setDate] = useState<string >('');
+
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
 
 
@@ -55,32 +66,62 @@ const Map: React.FC = () => {
       setHeight(Number(inputValue));
     }
   };
-  const fetchTempData  = async () => {
-   
+  const fetchTempData = async () => {
+
     try {
       const tempResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`)
       console.log(tempResponse.data)
+
+      setCloudDetail(tempResponse.data.clouds.all)
+      setHumidity(tempResponse.data.main.humidity)
+      setWind(tempResponse.data.wind.speed)
+      setAirPressure(tempResponse.data.main.pressure)
+      setTemperatureCelcius(Math.trunc(tempResponse.data.main.temp - 273.15))
+      setplaceName(tempResponse.data.name)
+      const milliseconds = tempResponse.data.dt
+
+  const datenew = new Date(milliseconds * 1000 );
+  console.log(datenew.toUTCString())
+  setDate(datenew.toUTCString())
+
+  var code = tempResponse.data.weather[0].icon
+  console.log(code)
+
+
+  // const getWeatherIcon = (code: string) => { new Date(timestamp * 1000)
+  //   switch (code) {
+  //     case '02n':
+  //       return <CloudOutlined />; // Use the appropriate icon component for each code
+  //     // Add more cases for other weather conditions
+  //     default:
+  //       return null; // Return null or a default icon for unknown codes
+  //   }
+  // };
+
+
 
       const customIcon = L.icon({
         iconUrl: markerIcon, // Path to your custom marker image
         iconSize: [40, 40], // Set the size of the icon
         iconAnchor: [20, 40] // Set the anchor point of the icon
       });
-  
 
-        // Add a marker to the map at a specific location
-    const marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(mapRef.current);
 
-    // You can also add a popup to the marker if needed
-    marker.bindPopup(`<b>Placename:</b> ${tempResponse.data.name}<br>
-    <b>Temperature:</b> ${(tempResponse.data.main.temp -273.15).toFixed(2)} °C <br>
+      // Add a marker to the map at a specific location
+      const marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(mapRef.current)
+      //.addTo(mapRef.current);
+      mapRef.current.flyTo([latitude, longitude], 15);
+
+      // You can also add a popup to the marker if needed
+      marker.bindPopup(`<b>Placename:</b> ${tempResponse.data.name}<br>
+    <b>Temperature:</b> ${(tempResponse.data.main.temp - 273.15).toFixed(2)} °C <br>
     <b>Weather:</b> ${tempResponse.data.weather[0].main}<br> `)
-    //.openPopup();
-      
+      //.openPopup();
+
     } catch (error) {
-      
+
     }
-    
+
   }
 
 
@@ -210,8 +251,124 @@ const Map: React.FC = () => {
                           fontSize: '20px',
                           fontWeight: 'bold'
                         }}
-                        onClick={fetchTempData}
+                          onClick={fetchTempData}
                         >Fetch Data</Button>
+
+                        <div style={{
+                          width: '26vw',
+                          height: 0,
+                          border: '.5px gray solid',
+                          marginTop: '50px'
+                        }
+
+                        } className="separator"></div>
+
+                        <Typography
+
+                          style={{
+
+                            padding: '8px 16px',
+                            cursor: 'pointer',
+                            fontSize: '20px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          Weather details
+                        </Typography>
+                        <div className="weather_items" style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Cloudy
+                              </Typography>
+                              <CloudOutlined style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{cloudDetail}%</p>
+
+                          </div>
+
+                          <div className="weather_humidity" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="humid" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Humidity
+                              </Typography>
+                              <Opacity style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{humidity} %</p>
+
+                          </div>
+
+
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Wind
+                              </Typography>
+                              <AirOutlined style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{wind} m/s</p>
+
+                          </div>
+
+
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Pressure
+                              </Typography>
+                              <Compress style={{ marginTop: '12px' }} />
+                              {/* < img src={pressure} style={{ marginTop: '1px' }} /> */}
+
+                            </div>
+                            <p>{airPressure} hPa</p>
+
+                          </div>
+
+
+                        </div>
+
+
+
+
 
                       </div>
                     )}
@@ -276,16 +433,16 @@ const Map: React.FC = () => {
                         <br />
 
                         <Button variant="contained"
-                         color="primary"
-                         style={{
-                          textTransform: 'none',
-                          marginLeft: '65px',
-                          width: '226px',
-                          height: '55px',
-                          fontSize: '20px',
-                          fontWeight: 'bold'
-                        }}
-                        onClick={fetchHeightData}
+                          color="primary"
+                          style={{
+                            textTransform: 'none',
+                            marginLeft: '65px',
+                            width: '226px',
+                            height: '55px',
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                          }}
+                          onClick={fetchHeightData}
                         >Fetch Data</Button>
 
                       </div>
@@ -297,6 +454,61 @@ const Map: React.FC = () => {
               <div>
 
                 <div className='stats' style={{ width: '71.5%', height: '31vh', position: 'absolute', top: '66vh', zIndex: 150 }}>
+                {activeTab === 'temperature' && (
+                  <div style={{color:'#fff'}}>
+
+                    <div style={{ display:'flex', flexDirection:'row'}}>
+
+                    <Typography
+                      style={{
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '98px',
+                        fontWeight: '500',
+                        marginTop: '5vh' 
+                      }}
+                    
+                    >
+                      {temperatureCelcius}°
+
+                    </Typography>
+                    {/* <br/> */}
+                    <div style={{display:'flex', flexDirection:'column', gap:'-8vh',   marginTop: '8vh' }}>
+                    <Typography
+                      style={{
+                        padding: '0px',
+                        cursor: 'pointer',
+                        fontSize: '30px',
+                        fontWeight: '500',
+                        marginTop: '20px' 
+                      }}
+                    
+                    >
+                      {placeName} 
+
+                    </Typography>
+                    <br />
+                    <Typography
+                      style={{
+                        padding: '0px',
+                        cursor: 'pointer',
+                        fontSize: '20px',
+                        fontWeight: '500',
+                        marginTop: '-3vh' 
+                      }}
+                    
+                    >
+                      {date} 
+
+                    </Typography>
+
+                    </div>
+                  
+                      
+                    </div>
+                    
+                  </div>
+                )}
 
 
                 </div>
