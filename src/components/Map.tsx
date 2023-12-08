@@ -39,28 +39,27 @@ const Map: React.FC = () => {
   const [acquisitionDate, setAcquisitionDate] = useState<string>('');
   const [spatialReference, setspatialReference] = useState<string>('');
   const [resolution, setResolution] = useState<string>('');
+  const [heightData, setheightData] = useState<any>([]);
+  const [heightLabels, setheightLabels] = useState<any>([]);
+
 
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
 
 
-  // const milliseconds = 1701900784
-
-  // const date = new Date(milliseconds);
-  // console.log(date)
   const formatData = (data: number[], backgroundColor: string): Chart.ChartData => ({
-    labels: tempLabels,
+    labels:activeTab === 'temperature' ? tempLabels : heightLabels,
     datasets: [{ data, backgroundColor, }],
   });
 
   const chartRef = useRef<Chart | null>(null);
 
-  const canvasCallback = (canvas: HTMLCanvasElement | null) => {
+  const canvasCallback = (canvas: HTMLCanvasElement | null) => { 
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (ctx) {
       chartRef.current = new Chart(ctx, {
         type: "bar",
-        data: formatData(tempData, '#fff'),
+        data: formatData(activeTab === 'temperature' ? tempData: heightData, '#fff'),
 
         options: {
           responsive: true,
@@ -173,6 +172,13 @@ setAcquisitionDate(elevationResponse.data.attributes.AcquisitionDate)
 setspatialReference(elevationResponse.data.location.spatialReference.latestWkid)
 setResolution(elevationResponse.data.resolution)
 
+var number_height = parseInt(elevation_value)
+console.log(typeof(number_height))
+setheightData([number_height])
+setheightLabels(['Elevation'])
+console.log(heightLabels)
+
+
 
 const customIcon = L.icon({
   iconUrl: markerIcon, // Path to your custom marker image
@@ -225,7 +231,7 @@ const customIcon = L.icon({
 
 
     if (chartRef.current) {
-      chartRef.current.data = formatData(tempData);
+      chartRef.current.data = formatData(activeTab === 'temperature' ? tempData : heightData, '#fff');
       chartRef.current.update();
     }
 
@@ -635,6 +641,7 @@ const customIcon = L.icon({
 
                         </div>
 
+
                       </div>
                     )}
                   </div>
@@ -718,6 +725,54 @@ const customIcon = L.icon({
 
                     </div>
                   )}
+                  {
+                    activeTab === 'elevation' && (
+                      <div style={{ color: '#fff', display: 'flex', flexDirection: 'row', gap: '8rem' }}>
+                        {
+                          heightData.length !== 0 ? 
+                            <div style={{ color: '#fff', display: 'flex', flexDirection: 'row',  }}>
+                      
+
+                          <Landscape  style={{ fontSize:'2rem',   marginTop: '13vh'}} />
+                          <Typography
+                            style={{
+                              padding: '0px',
+                              cursor: 'pointer',
+                              fontSize: '50px',
+                              fontWeight: '500',
+                              marginTop: '10vh',
+                              // marginLeft: '1vh'
+                            }}
+
+                          >
+                            {elevation} {unit}
+
+                          </Typography>
+
+                        </div> : ''
+
+                          
+
+
+                        }
+
+                        
+
+                        {
+                          heightData.length !== 0 ?
+                            <div style={{ color: '#fff', marginLeft: '18vw' }}>
+                              <h2>Elevation in {unit} </h2>
+                              <canvas ref={canvasCallback}></canvas>
+                            </div> : <div style={{ marginTop: '10vh', marginLeft: '27vw', fontWeight: 500 }}>Input Latitude and Longitude</div>
+
+
+
+                        }
+
+                      </div>
+
+                    )
+                  }
 
 
                 </div>
