@@ -1,8 +1,9 @@
 .signup{
     /* From https://css.glass */
-    background: rgba(25, 31, 63, 0.37);
+    background: rgba(25, 31, 63, 0.77);
+    background-image: url('../../assets/login.jpg');
     /* border-radius: 16px; */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(5.5px);
     -webkit-backdrop-filter: blur(5.5px);
     border:none;
@@ -14,4 +15,23 @@
     /* border: 1px solid rgba(25, 31, 63, 0.33); */
     /* border: 1px solid rgba(25, 31, 63, 0.33); */
         /* border: 1px solid rgba(240, 154, 71, 0.33); */
+        }
+        #email, #username, #password{
+            width: 15vw;
+            height:4vh;
+            border-radius: 10px;
+            margin: 10px;
+            border:none;
+            outline:none;
+        }
+        #email{
+            margin-left: 2vw;
+
+        }
+        .signup_btn, .login_btn{
+            margin-left: 5vw;
+            margin-top: 2vh;
+            width: 15vw;
+            height:4vh;
+
         }

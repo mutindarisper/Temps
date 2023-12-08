@@ -3,7 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {  TextField, } from '@mui/material';
 import './Signup.css'
+// import SpinningImage from './ThreeComponent'
+import SpinningImage from './SpinningImage2'
 
 
 
@@ -37,13 +40,14 @@ const Signup = () => {
       if(response.data[0].success === true) {
         // this.$router.push('/dashboard')
         toast.success("Login Successful", {
-            // timeout: 2000,
-            position: toast.POSITION.TOP_CENTER
+            position: toast.POSITION.TOP_RIGHT,
+      autoClose: 2000,
           });
         navigate('/');
       }
       else{
         // alert(response.data[0].error)
+        
         toast.error(response.data[0].error + ' '+ 'Please try again', {
             // timeout: 2000,
             position: toast.POSITION.TOP_CENTER
@@ -95,8 +99,21 @@ const Signup = () => {
             onChange={handleInputChange}
           />
         </div>
-        <button type="submit">Login</button>
+
+
+       
+        <button className='login_btn' type="submit">Login</button>
       </form>
+
+      {/* <div style={{ width: '50vw', height: '50vh',  position:'absolute', top:'20vh', left:'20vw' }}>
+      <SpinningImage />
+    </div> */}
+
+     
+
+      <div>
+      
+    </div>
     </div>
   )
 }
