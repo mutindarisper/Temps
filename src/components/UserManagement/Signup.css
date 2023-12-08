@@ -1,0 +1,17 @@
+.signup{
+    /* From https://css.glass */
+    background: rgba(25, 31, 63, 0.37);
+    /* border-radius: 16px; */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5.5px);
+    -webkit-backdrop-filter: blur(5.5px);
+    border:none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    /* border: 1px solid rgba(25, 31, 63, 0.33); */
+    /* border: 1px solid rgba(25, 31, 63, 0.33); */
+        /* border: 1px solid rgba(240, 154, 71, 0.33); */
+        }
