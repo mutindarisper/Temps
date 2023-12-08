@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Typography, Container, Grid, Paper, TextField, } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
-
 import L from 'leaflet';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css';
 import axios from 'axios';
 import './Map.css'
 import markerIcon from '../assets/marker.svg'
-import { CloudOutlined, Opacity, AirOutlined, Compress} from '@mui/icons-material';
-import pressure from '../assets/heat.svg'
+import { CloudOutlined, Opacity, AirOutlined, Compress } from '@mui/icons-material';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import Chart from 'chart.js'
-import { Line } from 'react-chartjs-2';
+
 
 
 
@@ -20,45 +19,48 @@ import { Line } from 'react-chartjs-2';
 const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'temperature' | 'elevation'>('temperature');
-  
+
   const [latitude, setLatitude] = useState<number>();
   const [longitude, setLongitude] = useState<number>();
-  const [height, setHeight] = useState<string >('');
-  const [cloudDetail, setCloudDetail] = useState<string >('');
-  const [humidity, setHumidity] =useState<string >('');
-  const [wind, setWind] = useState<string >('');
-  const [airPressure, setAirPressure] = useState<string >('');
+  const [height, setHeight] = useState<string>('');
+  const [cloudDetail, setCloudDetail] = useState<string>('');
+  const [humidity, setHumidity] = useState<string>('');
+  const [wind, setWind] = useState<string>('');
+  const [airPressure, setAirPressure] = useState<string>('');
   const [temperatureCelcius, setTemperatureCelcius] = useState<number>()
-  const [placeName, setplaceName] = useState<string >('');
-  const [date, setDate] = useState<string >('');
-  const [tempData, setTempData] = useState<any >([]);
+  const [placeName, setplaceName] = useState<string>('');
+  const [date, setDate] = useState<string>('');
+  const [tempData, setTempData] = useState<any>([]);
   const [tempLabels, setTempLabels] = useState<any>([])
   const tempRef = useRef<number>()
 
+  const [unit, setUnit] = useState('');
+
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
- 
+
 
   // const milliseconds = 1701900784
 
   // const date = new Date(milliseconds);
   // console.log(date)
-  const formatData = (data: number[], backgroundColor:string): Chart.ChartData => ({
+  const formatData = (data: number[], backgroundColor: string): Chart.ChartData => ({
     labels: tempLabels,
-    datasets: [{ data, backgroundColor,  }],
+    datasets: [{ data, backgroundColor, }],
   });
 
   const chartRef = useRef<Chart | null>(null);
 
- const canvasCallback = (canvas: HTMLCanvasElement | null) => {
+  const canvasCallback = (canvas: HTMLCanvasElement | null) => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (ctx) {
       chartRef.current = new Chart(ctx, {
         type: "bar",
         data: formatData(tempData, '#fff'),
-        
-        options: { responsive: true,
-        plugins: {
+
+        options: {
+          responsive: true,
+          plugins: {
             // Add background color here
             legend: false
           }
@@ -88,16 +90,14 @@ const Map: React.FC = () => {
     }
   };
 
-  const handleHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Validate and set the number value
-    const inputValue = event.target.value;
-    if (!isNaN(Number(inputValue))) {
-      setHeight(Number(inputValue));
-    }
+ 
+
+  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setUnit(event.target.value as string);
   };
   const fetchTempData = async () => {
 
-    try { 
+    try {
       const tempResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`)
       console.log(tempResponse.data)
 
@@ -110,40 +110,25 @@ const Map: React.FC = () => {
       setplaceName(tempResponse.data.name)
       const milliseconds = tempResponse.data.dt
 
-  const datenew = new Date(milliseconds * 1000 );
-  console.log(datenew.toUTCString())
-  setDate(datenew.toUTCString())
+      const datenew = new Date(milliseconds * 1000);
+      console.log(datenew.toUTCString())
+      setDate(datenew.toUTCString())
 
-  var code = tempResponse.data.weather[0].icon
-  console.log(code)
+      var code = tempResponse.data.weather[0].icon
+      console.log(code)
 
-  const temp_labels = tempResponse.data.main
-  const { temp_min, temp_max } = temp_labels;
-  const new_data = { temp_min, temp_max } 
-  const temperature_labels = Object.keys(new_data)
-  var temperature_values = Object.values(new_data)
-  setTempData(temperature_values)
-  setTempLabels(temperature_labels)
+      const temp_labels = tempResponse.data.main
+      const { temp_min, temp_max } = temp_labels;
+      const new_data = { temp_min, temp_max }
+      const temperature_labels = Object.keys(new_data)
+      var temperature_values = Object.values(new_data)
+      setTempData(temperature_values)
+      setTempLabels(temperature_labels)
 
-  console.log(Object.keys(new_data) )
-  console.log(Object.values(new_data) )
+      console.log(Object.keys(new_data))
+      console.log(Object.values(new_data))
 
 
-  // const temperatureData = (data:number[]): Chart.ChartData({
-  //   labels: ['temp_min', 'temp_max', ],
-  //   // datasets: [
-  //   //   {
-  //   //     label: 'Temperature',
-  //   //     data: [temp_min, temp_max], // Replace this with your temperature data
-  //   //     fill: false,
-  //   //     borderColor: 'blue',
-  //   //     backgroundColor: 'blue',
-  //   //   },
-  //   // ],
-  //   datasets:[{ data }]
-  // });
-
-  // setTempData(temperatureData)
 
 
       const customIcon = L.icon({
@@ -173,7 +158,30 @@ const Map: React.FC = () => {
   }
 
 
-  const fetchHeightData = () => {
+  const fetchHeightData = async () => {
+    try {
+      const elevationResponse = await axios.get(`https://epqs.nationalmap.gov/v1/json?x=${latitude}&y=${longitude}&wkid=4326&units=${unit}&includeDate=true&format=application/json`)
+console.log(elevationResponse.data)
+
+
+const customIcon = L.icon({
+  iconUrl: markerIcon, // Path to your custom marker image
+  iconSize: [40, 40], // Set the size of the icon
+  iconAnchor: [20, 40] // Set the anchor point of the icon
+});
+
+ // Add a marker to the map at a specific location
+ const marker = L.marker([longitude, latitude, ], { icon: customIcon }).addTo(mapRef.current)
+ //.addTo(mapRef.current);
+ mapRef.current.flyTo([longitude, latitude ], 15);
+
+ // You can also add a popup to the marker if needed
+ marker.bindPopup(`<b>Elevation:</b> ${Number(elevationResponse.data.value).toFixed(2)} Metres<br>
+<b>Acquisition date:</b> ${elevationResponse.data.attributes.AcquisitionDate} <br>
+<b>Spatial Reference:</b> ${elevationResponse.data.location.spatialReference.latestWkid}<br> `)
+    } catch (error) {
+
+    }
 
   }
 
@@ -470,19 +478,23 @@ const Map: React.FC = () => {
                         <br />
 
                         <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-                          <span>Height</span>
-                          <TextField
-                            style={{ backgroundColor: '#FFFFFF', borderRadius: '5px' }}
-                            type="number"
-                            label="Enter height in meters"
-                            value={height}
-                            onChange={handleHeightChange}
-                            variant="filled"
-                            InputLabelProps={{
-                              shrink: true,
-
-                            }}
-                          />
+                          <span>Units</span>
+                          <FormControl fullWidth style={{ marginLeft: '9px'}}>
+                            {/* <InputLabel id="select-label">Select Option</InputLabel> */}
+                            <Select
+                              labelId="select-label"
+                              id="select"
+                              value={unit}
+                              label="Select unit"
+                              style={{width:'220px', backgroundColor: '#FFFFFF', }}
+                              onChange={handleChange}
+                            >
+                              <MenuItem value=""></MenuItem>
+                              <MenuItem value="option1">Meters</MenuItem>
+                              <MenuItem value="option2">Feet</MenuItem>
+                             
+                            </Select>
+                          </FormControl>
 
                         </div>
                         <br />
@@ -509,80 +521,80 @@ const Map: React.FC = () => {
               <div>
 
                 <div className='stats' style={{ width: '71.5%', height: '31vh', position: 'absolute', top: '66vh', zIndex: 150 }}>
-                {activeTab === 'temperature' && (
-                  <div style={{color:'#fff', display:'flex', flexDirection:'row', gap:'8rem'}}>
+                  {activeTab === 'temperature' && (
+                    <div style={{ color: '#fff', display: 'flex', flexDirection: 'row', gap: '8rem' }}>
 
-                    <div style={{ display:'flex', flexDirection:'row'}}>
+                      <div style={{ display: 'flex', flexDirection: 'row' }}>
 
-                      {
-                        tempData.length !== 0 ? 
+                        {
+                          tempData.length !== 0 ?
+                            <Typography
+                              style={{
+                                padding: '8px 16px',
+                                cursor: 'pointer',
+                                fontSize: '98px',
+                                fontWeight: '500',
+                                marginTop: '5vh'
+                              }}
+
+                            >
+                              {temperatureCelcius}°
+
+                            </Typography> : ''
+
+
+                        }
+
+
+                        {/* <br/> */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '-8vh', marginTop: '8vh' }}>
                           <Typography
-                          style={{
-                            padding: '8px 16px',
-                            cursor: 'pointer',
-                            fontSize: '98px',
-                            fontWeight: '500',
-                            marginTop: '5vh' 
-                          }}
-                        
-                        >
-                          {temperatureCelcius}°
-    
-                        </Typography> : ''
+                            style={{
+                              padding: '0px',
+                              cursor: 'pointer',
+                              fontSize: '30px',
+                              fontWeight: '500',
+                              marginTop: '20px'
+                            }}
 
-                        
-                      }
+                          >
+                            {placeName}
 
-                   
-                    {/* <br/> */}
-                    <div style={{display:'flex', flexDirection:'column', gap:'-8vh',   marginTop: '8vh' }}>
-                    <Typography
-                      style={{
-                        padding: '0px',
-                        cursor: 'pointer',
-                        fontSize: '30px',
-                        fontWeight: '500',
-                        marginTop: '20px' 
-                      }}
-                    
-                    >
-                      {placeName} 
+                          </Typography>
+                          <br />
+                          <Typography
+                            style={{
+                              padding: '0px',
+                              cursor: 'pointer',
+                              fontSize: '20px',
+                              fontWeight: '500',
+                              marginTop: '-3vh'
+                            }}
 
-                    </Typography>
-                    <br />
-                    <Typography
-                      style={{
-                        padding: '0px',
-                        cursor: 'pointer',
-                        fontSize: '20px',
-                        fontWeight: '500',
-                        marginTop: '-3vh' 
-                      }}
-                    
-                    >
-                      {date} 
+                          >
+                            {date}
 
-                    </Typography>
+                          </Typography>
+
+                        </div>
+
+                        {
+                          tempData.length !== 0 ?
+                            <div style={{ color: '#fff', marginLeft: '18vw' }}>
+                              <h2>Temperature for {placeName}</h2>
+                              <canvas ref={canvasCallback}></canvas>
+                            </div> : <div style={{ marginTop: '10vh', marginLeft: '27vw', fontWeight: 500 }}>Input Latitude and Longitude</div>
+
+
+
+                        }
+
+
+
+                      </div>
 
                     </div>
-
-                      {
-                        tempData.length !== 0 ? 
-                        <div style={{color:'#fff', marginLeft:'18vw'}}>
-                        <h2>Temperature for {placeName}</h2>
-                        <canvas ref={canvasCallback}></canvas>
-                      </div> : <div style={{marginTop:'10vh', marginLeft:'27vw', fontWeight:500}}>Input Latitude and Longitude</div> 
-                          
-
-                  
-                      }
-                  
-                  
-                      
-                    </div>
-                    
-                  </div>
-                )}
+                  )}
 
 
                 </div>
