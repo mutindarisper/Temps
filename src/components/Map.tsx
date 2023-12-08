@@ -7,7 +7,7 @@ import 'leaflet-geosearch/dist/geosearch.css';
 import axios from 'axios';
 import './Map.css'
 import markerIcon from '../assets/marker.svg'
-import { CloudOutlined, Opacity, AirOutlined, Compress } from '@mui/icons-material';
+import { CloudOutlined, Opacity, AirOutlined, Compress, QueryBuilder, Landscape, AspectRatio, Language} from '@mui/icons-material';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import Chart from 'chart.js'
 
@@ -35,6 +35,10 @@ const Map: React.FC = () => {
   const tempRef = useRef<number>()
 
   const [unit, setUnit] = useState('');
+  const [elevation, setelevation] = useState<string>();
+  const [acquisitionDate, setAcquisitionDate] = useState<string>('');
+  const [spatialReference, setspatialReference] = useState<string>('');
+  const [resolution, setResolution] = useState<string>('');
 
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
 
@@ -162,6 +166,12 @@ const Map: React.FC = () => {
     try {
       const elevationResponse = await axios.get(`https://epqs.nationalmap.gov/v1/json?x=${latitude}&y=${longitude}&wkid=4326&units=${unit}&includeDate=true&format=application/json`)
 console.log(elevationResponse.data)
+const elevation_value = Number(elevationResponse.data.value).toFixed(2)
+
+setelevation(elevation_value)
+setAcquisitionDate(elevationResponse.data.attributes.AcquisitionDate)
+setspatialReference(elevationResponse.data.location.spatialReference.latestWkid)
+setResolution(elevationResponse.data.resolution)
 
 
 const customIcon = L.icon({
@@ -490,8 +500,8 @@ const customIcon = L.icon({
                               onChange={handleChange}
                             >
                               <MenuItem value=""></MenuItem>
-                              <MenuItem value="option1">Meters</MenuItem>
-                              <MenuItem value="option2">Feet</MenuItem>
+                              <MenuItem value="Meters">Meters</MenuItem>
+                              <MenuItem value="Feet">Feet</MenuItem>
                              
                             </Select>
                           </FormControl>
@@ -511,6 +521,119 @@ const customIcon = L.icon({
                           }}
                           onClick={fetchHeightData}
                         >Fetch Data</Button>
+
+
+                        <div style={{ 
+                          width: '26vw',
+                          height: 0,
+                          border: '.5px gray solid',
+                          marginTop: '50px'
+                        }
+
+                        } className="separator"></div>
+
+                        <Typography
+
+                          style={{
+
+                            padding: '8px 16px',
+                            cursor: 'pointer',
+                            fontSize: '20px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          Weather details
+                        </Typography>
+                        <div className="weather_items" style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Elevation
+                              </Typography>
+                              <Landscape style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{elevation} {unit}</p>
+
+                          </div>
+
+                          <div className="weather_humidity" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="humid" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Resulution
+                              </Typography>
+                              <AspectRatio style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{resolution} </p>
+
+                          </div>
+
+
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Acquisition Date
+                              </Typography>
+                              <QueryBuilder style={{ marginTop: '12px' }} />
+
+                            </div>
+                            <p>{acquisitionDate}</p>
+
+                          </div>
+
+
+                          <div className="weather_cloudy" style={{ display: 'flex', flexDirection: 'row', gap: '12rem' }}>
+
+                            <div className="cloudy" style={{ display: 'flex', flexDirection: 'row' }}>
+                              <Typography
+
+                                style={{
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontSize: '20px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Spatial Reference
+                              </Typography>
+                              <Language style={{ marginTop: '12px' }} />
+                              {/* < img src={pressure} style={{ marginTop: '1px' }} /> */}
+
+                            </div>
+                            <p>{spatialReference}</p>
+
+                          </div>
+
+
+                        </div>
 
                       </div>
                     )}
