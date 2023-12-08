@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Typography, Container, Grid, Paper, TextField, } from '@mui/material';
+import { Button, Typography, Container, Grid, Paper, TextField } from '@mui/material';
+import { AccountCircle } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
@@ -10,6 +13,7 @@ import markerIcon from '../assets/marker.svg'
 import { CloudOutlined, Opacity, AirOutlined, Compress, QueryBuilder, Landscape, AspectRatio, Language} from '@mui/icons-material';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import Chart from 'chart.js'
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -41,7 +45,7 @@ const Map: React.FC = () => {
   const [resolution, setResolution] = useState<string>('');
   const [heightData, setheightData] = useState<any>([]);
   const [heightLabels, setheightLabels] = useState<any>([]);
-
+const navigate = useNavigate()
 
   const API_KEY = 'c8de53bec21fd6904f961b4f2759445a'
 
@@ -250,8 +254,21 @@ const customIcon = L.icon({
               {/* Your map component */}
               {/* Replace this with your actual map component */}
               <div id="map" style={{ width: '100%', height: '97vh', zIndex: 100 }}>
+              
 
               </div>
+              <div className="div" style={{ backgroundColor:'#fff',  position:'absolute', top:'15vh', left:'.5vw', zIndex:150, borderRadius:'5px'}}>
+                <Tooltip title='Signup' arrow>
+
+                  <IconButton> 
+                <AccountCircle onClick={()=> navigate('/signup')}  style={{fontSize:'20px', }}  />
+                </IconButton>
+
+                </Tooltip>
+            
+
+              </div>
+              
 
               <div>
 
